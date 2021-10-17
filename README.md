@@ -9,6 +9,9 @@ Pada tugas 1 kami diminta membuat aplikasi Grafika WebGL berdasarkan gambar yang
 ## Tugas Mencoba ThreeJS
 Membuat beberapa objek pada ThreeJS solid dan wireframe dengan material dan lighting berbeda. [Github Pages](https://cg2021b.github.io/tugas-1-anandasatriaadi/mencoba%20threejs)
 
+## Tugas 3 Interaksi
+Membuat beberapa objek pada secara random dan menggunakan raycaster untuk deteksi objek menggunakan mouse. [Github Pages](https://cg2021b.github.io/tugas-1-anandasatriaadi/tugas3-interaksi)
+
 ## Nama Benda
 Benda yang saya foto adalah "Gelas" diawali dengan huruf G.
 
