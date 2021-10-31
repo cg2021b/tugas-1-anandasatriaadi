@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html
+  lang="en"
+  style="
+    background-color: #262626;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
+      Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  "
+>
+  <head>
+    <title>Tugas Model</title>
+    <style>
+      body {
+        margin: 0;
+      }
+      select {
+        color: white;
+        background-color: #ffaa22;
+        padding: 0.75rem 1rem;
+        border: 3px solid white;
+        border-radius: 15px;
+
+        -webkit-appearance: button;
+        appearance: button;
+        outline: none;
+      }
+    </style>
+  </head>
+  <body style="min-height: 100vh; display: flex; flex-direction: column">
+    <canvas id="myCanvas"> </canvas>
+    <div style="position: absolute; color: aliceblue; font-weight: 600">
+      <div
+        style="
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          padding: 1rem 0.5rem 0.5rem 4rem;
+          background-color: rgba(0, 0, 0, 0.35);
+          border-bottom-right-radius: 20px;
+        "
+      >
+        <h2 style="margin: 0.25rem">Tugas Individu Model, Shadow</h2>
+        <h2 style="color: #ffaa22; margin: 0.25rem">05111940000113</h2>
+        <h2 style="margin: 0.25rem">Putu Ananda Satria Adi</h2>
+        <a
+          href="./reflect.html"
+          style="margin: 0.25rem; color: #ffffff; text-decoration: none"
+          ><h2>< Reflection Task</h2></a
+        >
+      </div>
+    </div>
+  </body>
+</html>
+<script type="module">
+  import * as THREE from "https://threejsfundamentals.org/threejs/resources/threejs/r132/build/three.module.js";
+  import { OrbitControls } from "https://threejsfundamentals.org/threejs/resources/threejs/r132/examples/jsm/controls/OrbitControls.js";
+  import { GUI } from "https://threejsfundamentals.org/threejs/../3rdparty/dat.gui.module.js";
+  import { OBJLoader } from "https://threejsfundamentals.org/threejs/resources/threejs/r132/examples/jsm/loaders/OBJLoader.js";
+  import { MTLLoader } from "https://threejsfundamentals.org/threejs/resources/threejs/r132/examples/jsm/loaders/MTLLoader.js";
+
+  function main() {
+    const canvas = document.querySelector("#myCanvas");
+    const renderer = new THREE.WebGLRenderer({ canvas });
+    renderer.shadowMap.enabled = true;
+
+    const fov = 45;
+    const aspect = 2; // the canvas default
+    const near = 0.1;
+    const far = 200;
+    const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
+    camera.position.set(50, 20, 20);
+
+    const controls = new OrbitControls(camera, canvas);
+    controls.target.set(0, 5, 0);
+    controls.update();
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color("black");
+
+    {
+      const mtlLoader = new MTLLoader();
+      mtlLoader.load("./assets/spider.mtl", (mtl) => {
+        mtl.preload();
+        const objLoader = new OBJLoader();
+        objLoader.setMaterials(mtl);
+        objLoader.load("./assets/spider.obj", (root) => {
+          root.rotation.x = Math.PI * 0.45;
+          root.rotation.y = -Math.PI * 0.5;
+          root.position.y = 6;
+          root.position.z = 21;
+          root.position.x = 12.5;
+          root.castShadow = true;
+          root.receiveShadow = true;
+          root.scale.set(15, 15, 15);
+          root.traverse(function (child) {
+            if (child instanceof THREE.Mesh) {
+              child.castShadow = true;
+              child.receiveShadow = true;
+            }
+          });
+          scene.add(root);
+        });
+      });
+    }
+    {
+      const mtlLoader = new MTLLoader();
+      mtlLoader.load("./assets/croissant.mtl", (mtl) => {
+        mtl.preload();
+        const objLoader = new OBJLoader();
+        objLoader.setMaterials(mtl);
+        objLoader.load("./assets/croissant.obj", (root) => {
+          root.rotation.x = -Math.PI * 0.5;
+          root.position.x = -10;
+          root.castShadow = true;
+          root.receiveShadow = true;
+          root.scale.set(15, 15, 15);
+          root.traverse(function (child) {
+            if (child instanceof THREE.Mesh) {
+              child.castShadow = true;
+              child.receiveShadow = true;
+            }
+          });
+          scene.add(root);
+        });
+      });
+    }
+    {
+      const mtlLoader = new MTLLoader();
+      mtlLoader.load("./assets/crate.mtl", (mtl) => {
+        mtl.preload();
+        const objLoader = new OBJLoader();
+        objLoader.setMaterials(mtl);
+        objLoader.load("./assets/crate.obj", (root) => {
+          root.rotation.x = -Math.PI * 0.5;
+          root.castShadow = true;
+          root.receiveShadow = true;
+          root.scale.set(50, 50, 50);
+          root.traverse(function (child) {
+            if (child instanceof THREE.Mesh) {
+              child.castShadow = true;
+              child.receiveShadow = true;
+            }
+          });
+          scene.add(root);
+        });
+      });
+    }
+
+    class ColorGUIHelper {
+      constructor(object, prop) {
+        this.object = object;
+        this.prop = prop;
+      }
+      get value() {
+        return `#${this.object[this.prop].getHexString()}`;
+      }
+      set value(hexString) {
+        this.object[this.prop].set(hexString);
+      }
+    }
+
+    function makeXYZGUI(gui, vector3, name, onChangeFn) {
+      const folder = gui.addFolder(name);
+      folder.add(vector3, "x", -20, 20).onChange(onChangeFn);
+      folder.add(vector3, "y", 0, 20).onChange(onChangeFn);
+      folder.add(vector3, "z", -20, 20).onChange(onChangeFn);
+      // folder.open();
+    }
+
+    const light = new THREE.PointLight(0xfffffa, 1);
+    {
+      light.castShadow = true;
+      light.position.set(10, 30, 0);
+      scene.add(light);
+
+      const helper = new THREE.PointLightHelper(light);
+      scene.add(helper);
+
+      function updateCamera() {}
+
+      class MinMaxGUIHelper {
+        constructor(obj, minProp, maxProp, minDif) {
+          this.obj = obj;
+          this.minProp = minProp;
+          this.maxProp = maxProp;
+          this.minDif = minDif;
+        }
+        get min() {
+          return this.obj[this.minProp];
+        }
+        set min(v) {
+          this.obj[this.minProp] = v;
+          this.obj[this.maxProp] = Math.max(
+            this.obj[this.maxProp],
+            v + this.minDif
+          );
+        }
+        get max() {
+          return this.obj[this.maxProp];
+        }
+        set max(v) {
+          this.obj[this.maxProp] = v;
+          this.min = this.min; // this will call the min setter
+        }
+      }
+
+      const gui = new GUI();
+      gui.addColor(new ColorGUIHelper(light, "color"), "value").name("color");
+      gui.add(light, "intensity", 0, 2, 0.01);
+      gui.add(light, "distance", 0, 100).onChange(updateCamera);
+
+      {
+        const folder = gui.addFolder("Shadow Camera");
+        folder.open();
+        const minMaxGUIHelper = new MinMaxGUIHelper(
+          light.shadow.camera,
+          "near",
+          "far",
+          0.1
+        );
+        folder
+          .add(minMaxGUIHelper, "min", 0.1, 50, 0.1)
+          .name("near")
+          .onChange(updateCamera);
+        folder
+          .add(minMaxGUIHelper, "max", 0.1, 100, 0.1)
+          .name("far")
+          .onChange(updateCamera);
+      }
+
+      makeXYZGUI(gui, light.position, "position", updateCamera);
+    }
+
+    function resizeRendererToDisplaySize(renderer) {
+      const canvas = renderer.domElement;
+      const width = canvas.clientWidth;
+      const height = canvas.clientHeight;
+      const needResize = canvas.width !== width || canvas.height !== height;
+      if (needResize) {
+        renderer.setSize(width, height, false);
+      }
+      return needResize;
+    }
+
+    function render(time) {
+      time *= 0.001;
+      resizeRendererToDisplaySize(renderer);
+
+      {
+        const canvas = renderer.domElement;
+        camera.aspect = canvas.clientWidth / canvas.clientHeight;
+        camera.updateProjectionMatrix();
+      }
+
+      // console.log(light.position);
+      light.position.x = Math.sin(time) * 20;
+      light.position.z = Math.cos(time) * 20;
+      light.position.y = -Math.cos(time) * 20 + 30;
+
+      renderer.render(scene, camera);
+
+      requestAnimationFrame(render);
+    }
+
+    requestAnimationFrame(render);
+  }
+
+  main();
+</script>

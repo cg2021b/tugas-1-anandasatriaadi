@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html
+  lang="en"
+  style="
+    background-color: #262626;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
+      Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  "
+>
+  <head>
+    <title>Tugas Refleksi</title>
+    <style>
+      body {
+        margin: 0;
+      }
+      select {
+        color: white;
+        background-color: #ffaa22;
+        padding: 0.75rem 1rem;
+        border: 3px solid white;
+        border-radius: 15px;
+
+        -webkit-appearance: button;
+        appearance: button;
+        outline: none;
+      }
+    </style>
+  </head>
+  <body style="min-height: 100vh; display: flex; flex-direction: column">
+    <canvas id="myCanvas"> </canvas>
+    <div style="position: absolute; color: aliceblue; font-weight: 600">
+      <div
+        style="
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          padding: 1rem 0.5rem 0.5rem 4rem;
+          background-color: rgba(0, 0, 0, 0.35);
+          border-bottom-right-radius: 20px;
+        "
+      >
+        <h2 style="margin: 0.25rem">
+          Tugas Individu Texture, Control, Fog,<br />Panorama, Realistic
+          Reflection
+        </h2>
+        <h2 style="color: #ffaa22; margin: 0.25rem">05111940000113</h2>
+        <h2 style="margin: 0.25rem">Putu Ananda Satria Adi</h2>
+        <a
+          href="./model.html"
+          style="margin: 0.25rem; color: #ffffff; text-decoration: none"
+          ><h2>< Model Task</h2></a
+        >
+      </div>
+    </div>
+  </body>
+</html>
+<script type="module">
+  import * as THREE from "https://threejsfundamentals.org/threejs/resources/threejs/r132/build/three.module.js";
+  import { GUI } from "https://threejsfundamentals.org/threejs/../3rdparty/dat.gui.module.js";
+  import { OrbitControls } from "https://threejsfundamentals.org/threejs/resources/threejs/r132/examples/jsm/controls/OrbitControls.js";
+
+  function main() {
+    const canvas = document.querySelector("#myCanvas");
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+    const gui = new GUI();
+
+    const fov = 75;
+    const aspect = window.innerWidth / window.innerHeight;
+    const near = 0.1;
+    const far = 100;
+    const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
+    camera.position.z = 4;
+
+    const controls = new OrbitControls(camera, canvas);
+    controls.target.set(0, 0, 0);
+    controls.update();
+
+    const scene = new THREE.Scene();
+
+    // We use this class to pass to dat.gui
+    // so when it manipulates near or far
+    // near is never > far and far is never < near
+    // Also when dat.gui maniplates color we'll
+    // Update both the fog and background colors.
+    class FogGUIHelper {
+      constructor(fog, backgroundColor) {
+        this.fog = fog;
+        this.backgroundColor = backgroundColor;
+      }
+      get near() {
+        return this.fog.near;
+      }
+      set near(v) {
+        this.fog.near = v;
+        this.fog.far = Math.max(this.fog.far, v);
+      }
+      get far() {
+        return this.fog.far;
+      }
+      set far(v) {
+        this.fog.far = v;
+        this.fog.near = Math.min(this.fog.near, v);
+      }
+      get color() {
+        return `#${this.fog.color.getHexString()}`;
+      }
+      set color(hexString) {
+        this.fog.color.set(hexString);
+        this.backgroundColor.set(hexString);
+      }
+    }
+
+    class MinMaxGUIHelper {
+      constructor(obj, minProp, maxProp, minDif) {
+        this.obj = obj;
+        this.minProp = minProp;
+        this.maxProp = maxProp;
+        this.minDif = minDif;
+      }
+      get min() {
+        return this.obj[this.minProp];
+      }
+      set min(v) {
+        this.obj[this.minProp] = v;
+        this.obj[this.maxProp] = Math.max(
+          this.obj[this.maxProp],
+          v + this.minDif
+        );
+      }
+      get max() {
+        return this.obj[this.maxProp];
+      }
+      set max(v) {
+        this.obj[this.maxProp] = v;
+        this.min = this.min; // this will call the min setter
+      }
+    }
+
+    function updateCamera() {
+      camera.updateProjectionMatrix();
+    }
+
+    const camFolder = gui.addFolder("Camera");
+    camFolder.add(camera, "fov", 1, 180).onChange(updateCamera);
+    const minMaxGUIHelper = new MinMaxGUIHelper(camera, "near", "far", 0.1);
+    camFolder
+      .add(minMaxGUIHelper, "min", 0.1, 50, 0.1)
+      .name("near")
+      .onChange(updateCamera);
+    camFolder
+      .add(minMaxGUIHelper, "max", 0.1, 100, 0.1)
+      .name("far")
+      .onChange(updateCamera);
+
+    {
+      const near = 10;
+      const far = 15;
+      const color = "#ddddff";
+      scene.fog = new THREE.Fog(color, near, far);
+      scene.background = new THREE.Color(color);
+
+      const fogGUIHelper = new FogGUIHelper(scene.fog, scene.background);
+      const fogFolder = gui.addFolder("Fog");
+      fogFolder.add(fogGUIHelper, "near", near, far).listen();
+      fogFolder.add(fogGUIHelper, "far", near, far).listen();
+      fogFolder.addColor(fogGUIHelper, "color");
+    }
+
+    {
+      const color = 0x0088ff;
+      const intensity = 1;
+      const light = new THREE.PointLight(color, intensity);
+      light.position.set(0, -15, 0);
+      scene.add(light);
+    }
+
+    {
+      const color = 0xffffff;
+      const intensity = 1;
+      const light = new THREE.PointLight(color, intensity);
+      light.position.set(0, 3, 0);
+      scene.add(light);
+    }
+
+    const boxWidth = 0.75;
+    const boxHeight = 0.75;
+    const boxDepth = 0.75;
+    const geometry = new THREE.BoxGeometry(boxWidth, boxHeight, boxDepth);
+
+    function addObject(geometry, material, x, y, z) {
+      const obj = new THREE.Mesh(geometry, material);
+      scene.add(obj);
+
+      obj.position.x = x;
+      obj.position.y = y;
+      obj.position.z = z;
+
+      return obj;
+    }
+    const loader = new THREE.TextureLoader();
+
+    const cubes = [
+      addObject(
+        geometry,
+        new THREE.MeshPhongMaterial({ color: 0x44aa88 }),
+        -2,
+        0,
+        2
+      ),
+      addObject(
+        geometry,
+        new THREE.MeshPhongMaterial({
+          map: loader.load(
+            "https://cdn.pixabay.com/photo/2019/07/11/16/49/metal-texture-4331005_1280.jpg"
+          ),
+          shininess: 150,
+        }),
+        2,
+        0,
+        2
+      ),
+      addObject(
+        geometry,
+        new THREE.MeshPhongMaterial({ color: 0x8844aa }),
+        2,
+        0,
+        -2
+      ),
+      addObject(
+        geometry,
+        new THREE.MeshPhongMaterial({
+          map: loader.load(
+            "https://images.pexels.com/photos/129733/pexels-photo-129733.jpeg?&cs=tinysrgb&dpr=1&w=500"
+          ),
+          shininess: 0,
+        }),
+        -2,
+        0,
+        -2
+      ),
+    ];
+
+    const cubeRenderTarget = new THREE.WebGLCubeRenderTarget(128, {
+      format: THREE.RGBFormat,
+      generateMipmaps: true,
+      minFilter: THREE.LinearMipmapLinearFilter,
+    });
+
+    let sphereCamera = new THREE.CubeCamera(1, 100, cubeRenderTarget);
+    sphereCamera.position.set(0, 0, 0);
+    scene.add(sphereCamera);
+
+    let sphereMaterial = new THREE.MeshBasicMaterial({
+      envMap: sphereCamera.renderTarget,
+    });
+    let sphereGeo = new THREE.SphereGeometry(1, 100, 100);
+    let sphere = addObject(sphereGeo, sphereMaterial, 0, 0, 0);
+    scene.add(sphere);
+
+    {
+      const loader = new THREE.TextureLoader();
+      const texture = loader.load(
+        "https://dl.polyhaven.org/file/ph-assets/HDRIs/extra/Tonemapped%20JPG/aerodynamics_workshop.jpg",
+        () => {
+          const rt = new THREE.WebGLCubeRenderTarget(texture.image.height);
+          rt.fromEquirectangularTexture(renderer, texture);
+          scene.background = rt.texture;
+        }
+      );
+    }
+
+    function resizeRendererToDisplaySize(renderer) {
+      const canvas = renderer.domElement;
+      const width = canvas.clientWidth;
+      const height = canvas.clientHeight;
+      const needResize = canvas.width !== width || canvas.height !== height;
+      if (needResize) {
+        renderer.setSize(width, height, false);
+      }
+      return needResize;
+    }
+
+    function render(time) {
+      time *= 0.001;
+
+      if (resizeRendererToDisplaySize(renderer)) {
+        const canvas = renderer.domElement;
+        camera.aspect = canvas.clientWidth / canvas.clientHeight;
+        camera.updateProjectionMatrix();
+      }
+
+      cubes.forEach((cube, index) => {
+        const speed = 1 + index * 0.1;
+        const rot = time * speed;
+        cube.position.x = Math.sin(time + index * 1.75) * 3;
+        cube.position.z = Math.cos(time + index * 1.75) * 3;
+        cube.position.y = Math.sin(time + index) * 3;
+        cube.rotation.x = rot;
+        cube.rotation.y = rot;
+      });
+
+      renderer.render(scene, camera);
+      sphereCamera.updateCubeMap(renderer, scene);
+
+      requestAnimationFrame(render);
+    }
+
+    requestAnimationFrame(render);
+  }
+
+  main();
+</script>
