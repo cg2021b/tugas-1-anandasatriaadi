@@ -12,6 +12,11 @@ Membuat beberapa objek pada ThreeJS solid dan wireframe dengan material dan ligh
 ## Tugas 3 Interaksi
 Membuat beberapa objek pada secara random dan menggunakan raycaster untuk deteksi objek menggunakan mouse. [Github Pages](https://cg2021b.github.io/tugas-1-anandasatriaadi/tugas3-interaksi)
 
+## Tugas 4
+- [Loading Model dan Shadow](https://cg2021b.github.io/tugas-1-anandasatriaadi/tugas4-grafkomb/model.html)
+- [Texture, Control, Fog,
+Panorama, Realistic Reflection](https://cg2021b.github.io/tugas-1-anandasatriaadi/tugas4-grafkomb/reflect.html)
+
 ## Nama Benda
 Benda yang saya foto adalah "Gelas" diawali dengan huruf G.
 
